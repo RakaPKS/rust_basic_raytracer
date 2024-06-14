@@ -1,9 +1,13 @@
+use std::sync::Arc;
+
+use super::material::Scatter;
 use super::ray::Ray;
 use super::vec::{Point3, Vec3};
 
 pub struct HitRecord {
     pub point: Point3,
     pub normal: Vec3,
+    pub material: Arc<dyn Scatter>,
     pub time: f64,
     pub front_face: bool,
 }
