@@ -1,5 +1,6 @@
 // main.rs
 use std::{
+    fs::File,
     io::{stderr, Write},
     sync::Arc,
 };
@@ -12,6 +13,7 @@ mod ray;
 mod sphere;
 mod vec;
 
+use bvh::BvhNode;
 use camera::Camera;
 use hit::{Hit, World};
 use material::{Dielectric, Lambertian, Metal};
@@ -19,7 +21,6 @@ use rand::Rng;
 use ray::Ray;
 use sphere::Sphere;
 use vec::{Color, Point3, Vec3};
-use bvh::{BvhNode};
 
 fn ray_color(ray: &Ray, world: &World, depth: u64) -> Color {
     if depth == 0 {
@@ -93,11 +94,11 @@ fn default_scene() -> World {
     objects.push(Arc::new(sphere1));
     objects.push(Arc::new(sphere2));
     objects.push(Arc::new(sphere3));
-    let bvh = BvhNode::new(objects); 
+    let bvh = BvhNode::new(objects);
 
     let mut world = World::new();
     world.push(Box::new(bvh));
-    world 
+    world
 }
 
 fn main() {
@@ -107,7 +108,7 @@ fn main() {
     const IMAGE_HEIGHT: u64 = ((IMAGE_WIDTH as f64) / ASPECT_RATIO) as u64;
     const SAMPLES_PER_PIXEL: u64 = 500;
     const MAX_DEPTH: u64 = 50;
-
+    const OUTPUT_FILENAME: &str = "image.ppm";
     // World
     let world = default_scene();
 
@@ -127,9 +128,9 @@ fn main() {
         aperture,
         dist_to_focus,
     );
-    println!("P3");
-    println!("{} {}", IMAGE_WIDTH, IMAGE_HEIGHT);
-    println!("255");
+
+    let mut file = File::create(OUTPUT_FILENAME).expect("Failed to create file");
+    write!(file, "P3\n{} {}\n255\n", IMAGE_WIDTH, IMAGE_HEIGHT).expect("Failed to write to file");
 
     let mut rng = rand::thread_rng();
     for j in (0..IMAGE_HEIGHT).rev() {
@@ -148,9 +149,10 @@ fn main() {
                 let ray = camera.get_ray(u, v);
                 pixel_color += ray_color(&ray, &world, MAX_DEPTH);
             }
-            println!("{}", pixel_color.format_color(SAMPLES_PER_PIXEL));
+            writeln!(file, "{}", pixel_color.format_color(SAMPLES_PER_PIXEL))
+                .expect("Failed to write to file");
         }
     }
-
+    file.flush().expect("Failed to flush file");
     eprintln!("Done.");
 }
