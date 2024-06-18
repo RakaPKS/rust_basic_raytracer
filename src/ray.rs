@@ -1,3 +1,4 @@
+// ray.rs
 use super::vec::{Point3, Vec3};
 
 pub struct Ray {

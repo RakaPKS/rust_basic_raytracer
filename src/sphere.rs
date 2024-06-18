@@ -1,7 +1,10 @@
+
+//sphere.rs
 use super::hit::{Hit, HitRecord};
+use super::bvh::Aabb;
 use super::material::Scatter;
 use super::ray::Ray;
-use super::vec::Point3;
+use super::vec::{Point3, Vec3};
 use std::sync::Arc;
 
 pub struct Sphere {
@@ -52,5 +55,11 @@ impl Hit for Sphere {
         let outward_normal = (record.point - self.center) / self.radius;
         record.set_face_normal(ray, outward_normal);
         Some(record)
+    }
+    fn bounding_box(&self) -> Option<Aabb> {
+        Some(Aabb::new(
+            self.center - Vec3::new(self.radius, self.radius, self.radius),
+            self.center + Vec3::new(self.radius, self.radius, self.radius),
+        ))
     }
 }

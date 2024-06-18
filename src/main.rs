@@ -1,8 +1,10 @@
+// main.rs
 use std::{
     io::{stderr, Write},
     sync::Arc,
 };
 
+mod bvh;
 mod camera;
 mod hit;
 mod material;
@@ -17,6 +19,7 @@ use rand::Rng;
 use ray::Ray;
 use sphere::Sphere;
 use vec::{Color, Point3, Vec3};
+use bvh::{BvhNode};
 
 fn ray_color(ray: &Ray, world: &World, depth: u64) -> Color {
     if depth == 0 {
@@ -35,14 +38,15 @@ fn ray_color(ray: &Ray, world: &World, depth: u64) -> Color {
         (1.0 - time) * Color::new(1.0, 1.0, 1.0) + time * Color::new(0.5, 0.7, 1.0)
     }
 }
-fn random_scene() -> World {
+
+fn default_scene() -> World {
     let mut rng = rand::thread_rng();
-    let mut world = World::new();
+    let mut objects: Vec<Arc<dyn Hit>> = Vec::new();
 
     let ground_mat = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
     let ground_sphere = Sphere::new(Point3::new(0.0, -1000.0, 0.0), 1000.0, ground_mat);
 
-    world.push(Box::new(ground_sphere));
+    objects.push(Arc::new(ground_sphere));
 
     for a in -11..=11 {
         for b in -11..=11 {
@@ -59,7 +63,7 @@ fn random_scene() -> World {
                 let sphere_mat = Arc::new(Lambertian::new(albedo));
                 let sphere = Sphere::new(center, 0.2, sphere_mat);
 
-                world.push(Box::new(sphere));
+                objects.push(Arc::new(sphere));
             } else if choose_mat < 0.95 {
                 // Metal
                 let albedo = Color::random(0.4..1.0);
@@ -67,13 +71,13 @@ fn random_scene() -> World {
                 let sphere_mat = Arc::new(Metal::new(albedo, fuzz));
                 let sphere = Sphere::new(center, 0.2, sphere_mat);
 
-                world.push(Box::new(sphere));
+                objects.push(Arc::new(sphere));
             } else {
                 // Glass
                 let sphere_mat = Arc::new(Dielectric::new(1.5));
                 let sphere = Sphere::new(center, 0.2, sphere_mat);
 
-                world.push(Box::new(sphere));
+                objects.push(Arc::new(sphere));
             }
         }
     }
@@ -86,11 +90,14 @@ fn random_scene() -> World {
     let sphere2 = Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, mat2);
     let sphere3 = Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, mat3);
 
-    world.push(Box::new(sphere1));
-    world.push(Box::new(sphere2));
-    world.push(Box::new(sphere3));
+    objects.push(Arc::new(sphere1));
+    objects.push(Arc::new(sphere2));
+    objects.push(Arc::new(sphere3));
+    let bvh = BvhNode::new(objects); 
 
-    world
+    let mut world = World::new();
+    world.push(Box::new(bvh));
+    world 
 }
 
 fn main() {
@@ -102,7 +109,7 @@ fn main() {
     const MAX_DEPTH: u64 = 50;
 
     // World
-    let world = random_scene();
+    let world = default_scene();
 
     // Camera
     let lookfrom = Point3::new(13.0, 2.0, 3.0);

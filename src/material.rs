@@ -1,3 +1,4 @@
+//material.rs
 use super::hit::HitRecord;
 use super::ray::Ray;
 use super::vec::{Color, Vec3};

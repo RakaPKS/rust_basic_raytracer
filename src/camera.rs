@@ -1,3 +1,4 @@
+// camera.rs
 use super::ray::Ray;
 use super::vec::{Point3, Vec3};
 
