@@ -142,17 +142,15 @@ impl Hit for BvhNode {
         }
 
         let hit_left = self.left.hit(ray, t_min, t_max);
-        let hit_right = if let Some(l) = &hit_left {
-            self.right.hit(ray, t_min, l.time)
-        } else {
+        let hit_right = if hit_left.is_none() {
             self.right.hit(ray, t_min, t_max)
+        } else {
+            self.right.hit(ray, t_min, hit_left.as_ref().unwrap().time)
         };
 
-        match hit_right {
-            Some(r) => Some(r),
-            None => hit_left,
-        }
+        hit_right.or(hit_left)
     }
+
     fn bounding_box(&self) -> Option<Aabb> {
         Some(self.bounding_box)
     }
@@ -176,7 +174,6 @@ impl Aabb {
     pub fn max(&self) -> Vec3 {
         self.max
     }
-
     pub fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> bool {
         // Early termination if the ray's origin is inside the AABB
         if ray.origin().x() >= self.min.x() && ray.origin().x() <= self.max.x() &&
