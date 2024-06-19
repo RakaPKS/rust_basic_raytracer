@@ -9,7 +9,11 @@ pub struct Ray {
 
 impl Ray {
     pub fn new(origin: Point3, direction: Vec3) -> Ray {
-        Ray { origin, direction, inv_direction: direction.invert() }
+        Ray {
+            origin,
+            direction,
+            inv_direction: direction.invert(),
+        }
     }
 
     pub fn origin(&self) -> Point3 {
@@ -20,7 +24,7 @@ impl Ray {
         self.direction
     }
 
-    pub fn inv_direction(&self) -> Point3{
+    pub fn inv_direction(&self) -> Point3 {
         self.inv_direction
     }
 

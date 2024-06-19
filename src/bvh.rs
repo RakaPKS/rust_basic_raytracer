@@ -38,8 +38,7 @@ impl BvhNode {
             }
             _ => {
                 objects.sort_by(comparator);
-                let (left_objects, right_objects) =
-                    Self::split_objects(&objects, axis);
+                let (left_objects, right_objects) = Self::split_objects(&objects, axis);
                 (
                     Arc::new(BvhNode::new(left_objects)) as Arc<dyn Hit>,
                     Arc::new(BvhNode::new(right_objects)) as Arc<dyn Hit>,
@@ -90,7 +89,9 @@ impl BvhNode {
                 );
                 let right_box = Aabb::surrounding_box(
                     right_objects[0].bounding_box().unwrap(),
-                    right_objects[right_objects.len() - 1].bounding_box().unwrap(),
+                    right_objects[right_objects.len() - 1]
+                        .bounding_box()
+                        .unwrap(),
                 );
                 let cost = Self::calculate_sah_cost(
                     left_box.unwrap(),
@@ -176,29 +177,33 @@ impl Aabb {
     }
     pub fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> bool {
         // Early termination if the ray's origin is inside the AABB
-        if ray.origin().x() >= self.min.x() && ray.origin().x() <= self.max.x() &&
-           ray.origin().y() >= self.min.y() && ray.origin().y() <= self.max.y() &&
-           ray.origin().z() >= self.min.z() && ray.origin().z() <= self.max.z() {
+        if ray.origin().x() >= self.min.x()
+            && ray.origin().x() <= self.max.x()
+            && ray.origin().y() >= self.min.y()
+            && ray.origin().y() <= self.max.y()
+            && ray.origin().z() >= self.min.z()
+            && ray.origin().z() <= self.max.z()
+        {
             return true;
         }
         let mut t_min = t_min;
         let mut t_max = t_max;
-    
+
         for a in 0..3 {
             let t0 = (self.min()[a] - ray.origin()[a]) * ray.inv_direction()[a];
             let t1 = (self.max()[a] - ray.origin()[a]) * ray.inv_direction()[a];
-    
+
             let t_near = t0.min(t1);
             let t_far = t0.max(t1);
-    
+
             t_min = t_min.max(t_near);
             t_max = t_max.min(t_far);
-    
+
             if t_max <= t_min {
                 return false;
             }
         }
-    
+
         true
     }
 

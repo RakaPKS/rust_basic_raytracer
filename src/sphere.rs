@@ -1,7 +1,6 @@
-
 //sphere.rs
-use super::hit::{Hit, HitRecord};
 use super::bvh::Aabb;
+use super::hit::{Hit, HitRecord};
 use super::material::Scatter;
 use super::ray::Ray;
 use super::vec::{Point3, Vec3};

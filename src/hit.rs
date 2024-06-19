@@ -1,10 +1,10 @@
 // hit.rs
 use std::sync::Arc;
 
+use super::bvh::Aabb;
 use super::material::Scatter;
 use super::ray::Ray;
 use super::vec::{Point3, Vec3};
-use super::bvh::Aabb; 
 
 pub struct HitRecord {
     pub point: Point3,
@@ -28,11 +28,10 @@ impl HitRecord {
 pub trait Hit: Send + Sync {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 
-    fn bounding_box(&self) -> Option<Aabb>; 
+    fn bounding_box(&self) -> Option<Aabb>;
 }
 
 pub type World = Vec<Box<dyn Hit>>;
-
 
 impl Hit for World {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
